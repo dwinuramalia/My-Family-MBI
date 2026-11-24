@@ -1,0 +1,1664 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>My Family Quest — Interactive Learning Media</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap">
+  <style>
+    :root {
+      --bg: #E6F2FF;
+      --bg-dot: #C7E0FF;
+      --surface: rgba(255, 251, 240, 0.78);
+      --surface-soft: rgba(254, 243, 218, 0.68);
+      --ink: #3B2314;
+      --muted: #6B442A;
+      --line: #B87333;
+      --line-d: #7C4418;
+
+      --primary: #3B7BFF;
+      --primary-d: #1E54CC;
+      --primary-ink: #FFFFFF;
+
+      --sun: #FFC93C;
+      --sun-d: #D99B00;
+      --ok: #109E6B;
+      --ok-d: #0A6E4A;
+      --ok-bg: #DCFCE7;
+      --bad: #E03E3E;
+      --bad-d: #A82222;
+      --bad-bg: #FEE2E2;
+
+      /* Character Palette */
+      --c1: #3B7BFF; --t1: #DCE9FF; /* Father */
+      --c2: #FF5D73; --t2: #FFE0E5; /* Mother */
+      --c3: #10B981; --t3: #D1FAE5; /* Brother */
+      --c4: #8B5CF6; --t4: #EDE9FE; /* Sister */
+      --c5: #F59E0B; --t5: #FEF3C7; /* Grandfather */
+      --c6: #EC4899; --t6: #FCE7F3; /* Grandmother */
+      --c7: #06B6D4; --t7: #CFFAFE; /* Baby */
+
+      --display: 'Fredoka', 'Baloo 2', system-ui, sans-serif;
+      --body: 'Nunito', system-ui, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0D152E;
+        --bg-dot: #1A2854;
+        --surface: rgba(34, 24, 18, 0.80);
+        --surface-soft: rgba(48, 34, 24, 0.72);
+        --ink: #FEF3C7;
+        --muted: #D6BC94;
+        --line: #9A5B25;
+        --line-d: #5C320E;
+        --primary: #5E94FF;
+        --primary-d: #2E62CC;
+        --primary-ink: #0B1226;
+        --sun: #FFD24C;
+        --sun-d: #B8860B;
+        --ok: #34D399;
+        --ok-d: #059669;
+        --ok-bg: #0F3D31;
+        --bad: #F87171;
+        --bad-d: #B91C1C;
+        --bad-bg: #4A1D24;
+        --t1: #1E326B; --t2: #4D1F2C; --t3: #134538; --t4: #322566; --t5: #4D3812; --t6: #4D1E3B; --t7: #134352;
+        color-scheme: dark;
+      }
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      background-image: linear-gradient(180deg, #CBE7FF 0%, #E8F5FF 55%, #DCFCE7 100%);
+      color: var(--ink);
+      font-family: var(--body);
+      font-weight: 700;
+      font-size: 17px;
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(44px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      overflow-x: hidden;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) body {
+        background-image: linear-gradient(180deg, #091026 0%, #111D42 60%, #15283C 100%);
+      }
+    }
+
+    /* Decorative layered vector scenery background */
+    .sky-decor {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .sun-glow {
+      position: absolute;
+      top: 24px;
+      right: 6%;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #FFFBEB 20%, #FDE047 55%, rgba(253, 224, 71, 0) 75%);
+      animation: pulseSun 6s ease-in-out infinite alternate;
+    }
+    @keyframes pulseSun {
+      from { transform: scale(0.95); opacity: 0.85; }
+      to { transform: scale(1.08); opacity: 1; }
+    }
+    .cloud {
+      position: absolute;
+      opacity: 0.72;
+      animation: drift 32s linear infinite;
+      filter: drop-shadow(0 4px 6px rgba(59, 123, 255, 0.08));
+    }
+    @keyframes drift {
+      from { transform: translateX(-140px); }
+      to { transform: translateX(calc(100vw + 140px)); }
+    }
+    .hills-bg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 220px;
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    h1, h2, h3 {
+      font-family: var(--display);
+      font-weight: 700;
+      line-height: 1.15;
+      margin: 0;
+      letter-spacing: 0.01em;
+    }
+    p { margin: 0; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    :focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+
+    /* Top Header Bar */
+    .top {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 4px solid var(--line);
+      border-radius: 26px;
+      box-shadow: 0 6px 0 var(--line-d), inset 0 0 0 2px rgba(255, 255, 255, 0.45);
+      padding: 12px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #FFE066 0%, #FFB703 100%);
+      border: 3px solid #D99B00;
+      box-shadow: 0 4px 0 #D99B00;
+      display: grid;
+      place-items: center;
+      flex: none;
+      transform: rotate(-3deg);
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+    }
+    .logo:hover { transform: rotate(3deg) scale(1.06); }
+
+    .brand h1 {
+      font-size: clamp(22px, 4.5vw, 32px);
+      background: linear-gradient(90deg, var(--primary), #8B5CF6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+      background: var(--surface-soft);
+      border: 2px solid var(--line);
+      padding: 2px 10px;
+      border-radius: 999px;
+      margin-top: 2px;
+    }
+
+    .tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .stars {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 20px;
+      background: linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 100%);
+      color: #92400E;
+      border: 3px solid #F59E0B;
+      box-shadow: 0 4px 0 #D97706;
+      border-radius: 999px;
+      padding: 4px 16px;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .stars.bump { animation: bump 0.45s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes bump { 50% { transform: scale(1.25) rotate(-4deg); } }
+
+    /* Tactile Sticker Buttons */
+    .btn {
+      font-family: var(--body);
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 3px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 5px 0 var(--line);
+      padding: 0.55em 1.15em;
+      min-height: 48px;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
+    }
+    .btn:hover:not([disabled]) { background: var(--surface-soft); }
+    .btn:active:not([disabled]) { transform: translateY(4px); box-shadow: 0 1px 0 var(--line); }
+
+    .btn.primary {
+      background: linear-gradient(180deg, #528BFF 0%, var(--primary) 100%);
+      color: var(--primary-ink);
+      border-color: var(--primary-d);
+      box-shadow: 0 5px 0 var(--primary-d);
+    }
+    .btn.primary:hover:not([disabled]) { filter: brightness(1.06); }
+    .btn.primary:active:not([disabled]) { box-shadow: 0 1px 0 var(--primary-d); }
+
+    .btn.small {
+      min-height: 44px;
+      padding: 0.35em 0.9em;
+      font-size: 15px;
+      border-radius: 14px;
+      box-shadow: 0 4px 0 var(--line);
+    }
+    .btn.small:active:not([disabled]) { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+
+    .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+    .btn[aria-pressed="true"] {
+      background: var(--sun);
+      color: #162447;
+      border-color: var(--sun-d);
+      box-shadow: 0 4px 0 var(--sun-d);
+    }
+
+    /* Adventure Trail Navigation */
+    .trail-wrap {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 4px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 5px 0 var(--line-d), inset 0 0 0 2px rgba(255, 255, 255, 0.45);
+      padding: 10px 12px 6px;
+    }
+    .trail {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 4px 8px;
+      scrollbar-width: thin;
+      position: relative;
+    }
+    .node {
+      flex: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      width: 82px;
+      background: none;
+      border: 0;
+      color: var(--muted);
+      font-family: var(--body);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 2px;
+      position: relative;
+      transition: transform 0.2s;
+    }
+    .node:hover { transform: translateY(-2px); }
+    .node .dot {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      background: var(--surface-soft);
+      border: 3px solid var(--line);
+      box-shadow: 0 4px 0 var(--line);
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+    }
+    .node[aria-current="step"] { color: var(--primary); }
+    .node[aria-current="step"] .dot {
+      border-color: var(--primary-d);
+      background: var(--t1);
+      box-shadow: 0 5px 0 var(--primary-d);
+      transform: scale(1.08) translateY(-2px);
+    }
+    .node.done .dot {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+      box-shadow: 0 4px 0 var(--ok-d);
+    }
+    .node.done::after {
+      content: "✓";
+      position: absolute;
+      top: -2px;
+      right: 12px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--ok);
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    /* Main Stage Card */
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 5px solid var(--line);
+      border-radius: 30px;
+      box-shadow: 0 8px 0 var(--line-d), inset 0 0 0 3px rgba(255, 255, 255, 0.5);
+      padding: clamp(18px, 3.5vw, 32px);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      min-width: 0;
+      position: relative;
+      animation: cardIn 0.3s cubic-bezier(.22,1,.36,1);
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border: 2px dashed rgba(184, 115, 51, 0.35);
+      border-radius: 22px;
+      pointer-events: none;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .card:focus { outline: none; }
+
+    .head {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-bottom: 2px dashed var(--line);
+      padding-bottom: 14px;
+    }
+    .phase {
+      align-self: flex-start;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 900;
+      background: var(--t5);
+      color: #92400E;
+      border: 2px solid #F59E0B;
+      padding: 3px 12px;
+      border-radius: 999px;
+    }
+    .head h2 { font-size: clamp(26px, 5.5vw, 38px); color: var(--ink); }
+    .goal { color: var(--muted); font-size: 18px; font-weight: 700; }
+    .idt { display: none; color: var(--primary); font-weight: 700; font-size: 15px; }
+    .show-id .idt { display: block; }
+    .show-id span.idt, .show-id small.idt { display: inline; }
+
+    /* Custom Character Avatar Badge */
+    .av {
+      display: inline-grid;
+      place-items: center;
+      flex: none;
+      width: var(--s, 80px);
+      height: var(--s, 80px);
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 25%, #FFFFFF 0%, var(--t) 65%);
+      border: 4px solid var(--c);
+      box-shadow: 0 5px 0 var(--c);
+      overflow: hidden;
+      transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    }
+    .av svg { width: 84%; height: 84%; display: block; }
+
+    /* Stage 1: Breathing */
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px;
+      align-items: center;
+    }
+    .col { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+    .big { font-family: var(--display); font-weight: 700; font-size: clamp(24px, 5vw, 34px); }
+    .hint { color: var(--muted); font-weight: 700; }
+
+    .breath-wrap {
+      display: grid;
+      place-items: center;
+      min-height: 260px;
+      background: var(--surface-soft);
+      border: 3px dashed var(--line);
+      border-radius: 26px;
+      position: relative;
+    }
+    .breath {
+      width: 185px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: radial-gradient(circle at 35% 30%, #FFFFFF, var(--t7) 45%, var(--c7) 100%);
+      border: 5px solid #0891B2;
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.35);
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 24px;
+      color: #0E1730;
+      transition: transform 4s ease-in-out, box-shadow 4s ease-in-out;
+    }
+    .breath.in {
+      transform: scale(1.28);
+      box-shadow: 0 0 0 18px rgba(6, 182, 212, 0.16), 0 12px 32px rgba(6, 182, 212, 0.45);
+    }
+    .breath.out {
+      transform: scale(0.82);
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+    }
+
+    /* Stage 2: Family Living Room Scene */
+    .scene {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+      background: linear-gradient(180deg, #FEF9C3 0%, #FDE68A 100%);
+      border: 3px solid #F59E0B;
+      border-radius: 24px;
+      padding: 22px 14px;
+      position: relative;
+    }
+    .person {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 0;
+      font: inherit;
+      cursor: pointer;
+      color: var(--ink);
+      min-width: 92px;
+      padding: 4px;
+    }
+    .person:hover .av { transform: translateY(-4px) scale(1.05); }
+    .person:active .av { transform: scale(0.93); }
+    .person .nm {
+      font-weight: 800;
+      background: var(--surface);
+      border: 2px solid var(--line);
+      box-shadow: 0 3px 0 var(--line);
+      border-radius: 999px;
+      padding: 2px 14px;
+      font-size: 15px;
+      animation: popIn 0.25s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .sub {
+      border-top: 2px dashed var(--line);
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .qrow { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .qt { font-family: var(--display); font-weight: 700; font-size: clamp(21px, 4.2vw, 28px); line-height: 1.2; }
+
+    .opts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .opt {
+      font-family: var(--body);
+      font-weight: 800;
+      font-size: 19px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 3px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 5px 0 var(--line);
+      min-height: 62px;
+      padding: 10px 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      touch-action: manipulation;
+      transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+    }
+    .opt small { font-size: 13px; color: var(--muted); }
+    .opt:hover:not([disabled]) { background: var(--surface-soft); border-color: var(--primary); }
+    .opt:active:not([disabled]) { transform: translateY(4px); box-shadow: 0 1px 0 var(--line); }
+    .opt.right {
+      background: var(--ok-bg);
+      border-color: var(--ok);
+      box-shadow: 0 5px 0 var(--ok-d);
+      color: var(--ok);
+    }
+    .opt.wrong {
+      background: var(--bad-bg);
+      border-color: var(--bad);
+      box-shadow: 0 5px 0 var(--bad-d);
+      color: var(--bad);
+      animation: shake 0.4s;
+    }
+    .opt[disabled] { cursor: default; }
+    @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+    .fb { min-height: 1.5em; font-weight: 800; font-size: 17px; }
+    .fb.ok { color: var(--ok); }
+    .fb.no { color: var(--bad); }
+
+    .dots { display: flex; gap: 10px; align-items: center; justify-content: center; }
+    .dots i {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--line);
+      transition: all 0.25s;
+    }
+    .dots i.on { background: var(--ok); }
+    .dots i.cur { background: var(--primary); transform: scale(1.3); box-shadow: 0 0 0 4px var(--t1); }
+
+    .pic { display: grid; place-items: center; padding: 8px; }
+
+    /* Flashcard Styling */
+    .flash {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+      background: linear-gradient(180deg, var(--surface-soft) 0%, var(--t1) 100%);
+      border: 3px solid var(--primary);
+      box-shadow: 0 6px 0 var(--primary-d);
+      border-radius: 26px;
+      padding: 24px 16px;
+    }
+    .word {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(38px, 9vw, 60px);
+      line-height: 1.05;
+      color: var(--ink);
+    }
+    .ph { font-size: 19px; color: var(--muted); font-weight: 700; }
+    .syl {
+      letter-spacing: 0.14em;
+      font-weight: 900;
+      color: var(--primary);
+      background: var(--surface);
+      padding: 2px 14px;
+      border-radius: 999px;
+      border: 2px solid var(--line);
+    }
+    .move {
+      background: var(--surface);
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      padding: 10px 16px;
+      font-size: 16px;
+      max-width: 480px;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+    .cardnav { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .chip {
+      font-family: var(--body);
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--ink);
+      background: var(--ok-bg);
+      border: 2px solid var(--ok);
+      box-shadow: 0 3px 0 var(--ok-d);
+      border-radius: 999px;
+      padding: 6px 16px;
+      min-height: 42px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .chip:active { transform: translateY(2px); }
+    .chip.mute {
+      background: var(--surface-soft);
+      border-color: var(--line);
+      box-shadow: 0 3px 0 var(--line);
+      color: var(--muted);
+    }
+
+    /* Stage 5: Finger Family Puppet Stage */
+    .fingers {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 22px 10px 0;
+      background: linear-gradient(180deg, #CFFAFE 0%, #A5F3FC 100%);
+      border: 3px solid #06B6D4;
+      border-bottom: 10px solid #0891B2;
+      border-radius: 24px;
+      min-height: 220px;
+      overflow: hidden;
+    }
+    .finger {
+      width: 74px;
+      min-height: 150px;
+      border-radius: 38px 38px 0 0;
+      background: #FFE4C4;
+      border: 3px solid #D99B66;
+      border-bottom: 0;
+      box-shadow: inset 0 8px 0 rgba(255,255,255,0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 0 12px;
+      font-family: var(--body);
+      font-weight: 900;
+      font-size: 13px;
+      color: #162447;
+      cursor: pointer;
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), opacity 0.35s;
+    }
+    .fingers.play .finger:not(.pop) { transform: translateY(68px); opacity: 0.45; }
+    .finger.pop {
+      transform: translateY(-10px) scale(1.06);
+      animation: wig 0.45s infinite alternate;
+      border-color: var(--primary);
+      box-shadow: 0 0 16px rgba(59, 123, 255, 0.4);
+    }
+    @keyframes wig { from { rotate: -5deg; } to { rotate: 5deg; } }
+
+    .lyrics {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 8px 20px;
+    }
+    .lyrics li {
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 16px;
+      color: var(--muted);
+      background: var(--surface-soft);
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .lyrics li.on {
+      background: var(--sun);
+      border-color: var(--sun-d);
+      color: #162447;
+      font-weight: 900;
+      transform: scale(1.02);
+    }
+
+    /* Stage 7: Sentence Builder */
+    .sentence {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(26px, 5.5vw, 38px);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      justify-content: center;
+      align-items: center;
+      background: var(--surface-soft);
+      border: 3px solid var(--line);
+      border-radius: 22px;
+      padding: 16px 20px;
+    }
+    .slot {
+      min-width: 104px;
+      text-align: center;
+      background: var(--surface);
+      border: 3px dashed var(--primary);
+      border-radius: 14px;
+      padding: 2px 12px;
+      color: var(--primary);
+      min-height: 1.3em;
+    }
+    .slot.bad { border-style: solid; border-color: var(--bad); color: var(--bad); background: var(--bad-bg); animation: shake 0.4s; }
+    .slot.good { border-style: solid; border-color: var(--ok); color: var(--ok); background: var(--ok-bg); }
+
+    /* Stage 8: Listen & Circle Assessment */
+    .circ {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      background: var(--surface-soft);
+      border: 3px solid var(--line);
+      border-radius: 22px;
+      padding: 12px 16px;
+    }
+    .circ .yn { display: flex; gap: 10px; }
+    .ring {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 19px;
+      min-width: 82px;
+      min-height: 52px;
+      border-radius: 999px;
+      border: 3px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      padding: 6px 16px;
+      transition: all 0.15s;
+    }
+    .ring[aria-pressed="true"] {
+      border-color: #E11D48;
+      background: #FFE4E6;
+      color: #9F1239;
+      transform: scale(1.06) rotate(-3deg);
+      box-shadow: 0 3px 0 #E11D48;
+    }
+    .circ.right { border-color: var(--ok); background: var(--ok-bg); }
+    .circ.wrong { border-color: var(--bad); background: var(--bad-bg); }
+
+    .score {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+      border: 3px solid #F59E0B;
+      border-radius: 22px;
+      padding: 16px 20px;
+      color: #162447;
+    }
+    .score b { font-family: var(--display); font-size: 46px; line-height: 1; color: #D97706; }
+    .grade { font-family: var(--display); font-weight: 700; font-size: 28px; }
+
+    /* Stage 9: Point & Speak */
+    .grid6 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 14px;
+    }
+    .tile {
+      font: inherit;
+      font-weight: 800;
+      color: var(--ink);
+      background: var(--surface-soft);
+      border: 3px solid var(--line);
+      box-shadow: 0 5px 0 var(--line);
+      border-radius: 22px;
+      padding: 14px 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .tile:hover { transform: translateY(-3px); }
+    .tile[aria-pressed="true"] {
+      border-color: var(--primary);
+      background: var(--t1);
+      box-shadow: 0 5px 0 var(--primary-d);
+    }
+    .tile.did { border-color: var(--ok); background: var(--ok-bg); }
+
+    .panel {
+      background: var(--t1);
+      border: 3px solid var(--primary);
+      border-radius: 22px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* Win Banner & Pager */
+    .win {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      background: var(--ok-bg);
+      color: var(--ok);
+      border: 3px solid var(--ok);
+      box-shadow: 0 5px 0 var(--ok-d);
+      border-radius: 20px;
+      padding: 14px 18px;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 23px;
+      animation: popIn 0.35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .pager { display: flex; justify-content: space-between; gap: 12px; }
+    .pager .btn.glow { animation: glow 1.4s infinite; }
+    @keyframes glow {
+      50% { box-shadow: 0 5px 0 var(--primary-d), 0 0 0 8px rgba(59, 123, 255, 0.28); }
+    }
+
+    .notice {
+      background: var(--t5);
+      border: 2px solid #F59E0B;
+      color: #78350F;
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-size: 15px;
+    }
+
+    .badge {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      background: linear-gradient(135deg, #FEF3C7 0%, #FCE7F3 100%);
+      border: 3px solid #F59E0B;
+      box-shadow: 0 5px 0 #D97706;
+      border-radius: 24px;
+      padding: 18px 22px;
+      color: #162447;
+    }
+    .badge .big { font-size: clamp(22px, 5vw, 30px); }
+
+    input[type=text] {
+      font: inherit;
+      font-weight: 800;
+      padding: 0.55em 0.9em;
+      min-height: 50px;
+      border-radius: 16px;
+      border: 3px solid var(--line);
+      background: var(--surface-soft);
+      color: var(--ink);
+      width: 100%;
+      max-width: 320px;
+    }
+    input[type=text]:focus { border-color: var(--primary); outline: none; }
+
+    /* Teacher Guide Table */
+    .tbl { overflow-x: auto; border: 2px solid var(--line); border-radius: 16px; }
+    table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--line); vertical-align: top; }
+    th { font-family: var(--display); font-size: 16px; background: var(--t1); }
+    .tcol { display: flex; flex-direction: column; gap: 10px; }
+    .tcol h3 { font-size: 21px; margin-top: 8px; color: var(--primary); }
+    .tcol ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; font-weight: 700; }
+
+    .fall {
+      position: fixed;
+      top: -36px;
+      z-index: 50;
+      font-size: 30px;
+      pointer-events: none;
+      animation: fall 1.8s ease-in forwards;
+    }
+    @keyframes fall {
+      to { transform: translateY(108vh) rotate(360deg); opacity: 0.7; }
+    }
+
+    @media (max-width: 640px) {
+      .split { grid-template-columns: minmax(0, 1fr); }
+      .breath-wrap { min-height: 220px; }
+      .circ { grid-template-columns: auto minmax(0, 1fr); }
+      .circ .yn { grid-column: 1 / -1; justify-content: center; }
+      .finger { width: 60px; }
+      .fingers { gap: 6px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .fall { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Decorative Sky & Meadow Scenery Background -->
+  <div class="sky-decor" aria-hidden="true">
+    <div class="sun-glow"></div>
+    <svg class="cloud" style="top:6%;animation-duration:40s" width="130" height="52" viewBox="0 0 110 44" fill="#FFFFFF">
+      <path d="M25 40h60a15 15 0 0 0 2-29.8A22 22 0 0 0 45 6a18 18 0 0 0-20 14A12 12 0 0 0 25 40z"/>
+    </svg>
+    <svg class="cloud" style="top:20%;animation-duration:55s;animation-delay:-18s" width="100" height="40" viewBox="0 0 110 44" fill="#FFFFFF">
+      <path d="M25 40h60a15 15 0 0 0 2-29.8A22 22 0 0 0 45 6a18 18 0 0 0-20 14A12 12 0 0 0 25 40z"/>
+    </svg>
+    <svg class="cloud" style="top:36%;animation-duration:48s;animation-delay:-30s" width="85" height="34" viewBox="0 0 110 44" fill="#FFFFFF">
+      <path d="M25 40h60a15 15 0 0 0 2-29.8A22 22 0 0 0 45 6a18 18 0 0 0-20 14A12 12 0 0 0 25 40z"/>
+    </svg>
+    <!-- Soft Green Hills & Little Family House Silhouette -->
+    <svg class="hills-bg" viewBox="0 0 1440 220" preserveAspectRatio="none">
+      <path d="M0,120 C320,40 540,190 920,110 C1180,55 1340,110 1440,95 L1440,220 L0,220 Z" fill="#BBF7D0" opacity="0.75"/>
+      <path d="M0,155 C280,195 620,85 1040,155 C1240,185 1360,140 1440,150 L1440,220 L0,220 Z" fill="#86EFAC" opacity="0.85"/>
+      <!-- Tiny Cute House on the Hill -->
+      <g transform="translate(130, 88)">
+        <rect x="10" y="22" width="44" height="32" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="2.5"/>
+        <path d="M4 24L32 4L60 24" fill="#F87171" stroke="#B91C1C" stroke-width="2.5" stroke-linejoin="round"/>
+        <rect x="26" y="34" width="12" height="20" rx="2" fill="#D97706"/>
+        <circle cx="19" cy="34" r="4" fill="#38BDF8"/>
+        <circle cx="45" cy="34" r="4" fill="#38BDF8"/>
+      </g>
+      <!-- Tiny Trees -->
+      <g transform="translate(1240, 92)">
+        <rect x="14" y="32" width="8" height="22" rx="2" fill="#92400E"/>
+        <circle cx="18" cy="24" r="18" fill="#22C55E"/>
+        <circle cx="12" cy="19" r="11" fill="#4ADE80"/>
+      </g>
+    </svg>
+  </div>
+
+  <div id="app">
+    <header class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <!-- Cute House SVG Icon -->
+          <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+            <path d="M6 23L24 8L42 23" stroke="#9A3412" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M11 21V40H37V21" fill="#FFFBEB" stroke="#9A3412" stroke-width="4" stroke-linejoin="round"/>
+            <rect x="20" y="27" width="8" height="13" rx="2" fill="#F97316"/>
+            <circle cx="24" cy="18" r="3" fill="#3B82F6"/>
+          </svg>
+        </div>
+        <div>
+          <h1>My Family Quest</h1>
+          <span class="badge-pill">📘 Chapter 3 · English · Grade 3</span>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="stars" id="stars" aria-live="polite"><span aria-hidden="true">⭐</span><span id="starN">0</span><span class="sr"> stars</span></div>
+        <button class="btn small" id="bSound" aria-pressed="false" title="Sound">🔊 Sound</button>
+        <button class="btn small" id="bId" aria-pressed="false" title="Terjemahan Indonesia">🇮🇩 Bahasa</button>
+        <button class="btn small" id="bTeach" title="Untuk guru">👩‍🏫 Guru</button>
+      </div>
+    </header>
+
+    <div id="ttsNote" class="notice" hidden>
+      Sound is not available on this device. Your teacher can read the words aloud. / Suara tidak tersedia di perangkat ini; guru dapat membacakannya.
+    </div>
+
+    <div class="trail-wrap">
+      <nav class="trail" id="trail" aria-label="Lesson stages"></nav>
+    </div>
+
+    <main class="card" id="stage" tabindex="-1"></main>
+
+    <div class="pager" id="pager">
+      <button class="btn" id="bBack">◀ Back</button>
+      <button class="btn primary" id="bNext">Next ▶</button>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    const $ = s => document.querySelector(s);
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---------- Custom Cute Vector Illustrations ---------- */
+    const SVG_FACES = {
+      father: `<svg viewBox="0 0 100 100"><circle cx="50" cy="54" r="30" fill="#FDBA74"/><path d="M22 46c0-18 12-26 28-26s28 8 28 26c-4-8-14-12-28-12s-24 4-28 12z" fill="#1E293B"/><circle cx="39" cy="52" r="3.5" fill="#1E293B"/><circle cx="61" cy="52" r="3.5" fill="#1E293B"/><path d="M36 63c4-3 10-3 14 0 4-3 10-3 14 0" stroke="#334155" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M43 70c4 4 10 4 14 0" stroke="#9A3412" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M24 88c4-10 14-14 26-14s22 4 26 14" fill="#3B82F6"/></svg>`,
+      mother: `<svg viewBox="0 0 100 100"><path d="M18 65c0-26 12-44 32-44s32 18 32 44c0 10-6 18-12 18H30c-6 0-12-8-12-18z" fill="#451A03"/><circle cx="50" cy="54" r="28" fill="#FED7AA"/><path d="M24 46c8-10 20-12 26-12s18 2 26 12c-4-14-14-20-26-20s-22 6-26 20z" fill="#451A03"/><circle cx="39" cy="53" r="3.5" fill="#1E293B"/><circle cx="61" cy="53" r="3.5" fill="#1E293B"/><circle cx="33" cy="60" r="4" fill="#FDA4AF" opacity="0.7"/><circle cx="67" cy="60" r="4" fill="#FDA4AF" opacity="0.7"/><path d="M42 66c4 5 12 5 16 0" stroke="#BE123C" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M26 90c4-10 13-14 24-14s20 4 24 14" fill="#FF5D73"/></svg>`,
+      brother: `<svg viewBox="0 0 100 100"><circle cx="50" cy="56" r="27" fill="#FDBA74"/><path d="M23 48l7-16 10 6 10-10 10 10 10-6 7 16c-8-6-18-8-27-8s-19 2-27 8z" fill="#7C2D12"/><circle cx="40" cy="55" r="3.5" fill="#1E293B"/><circle cx="60" cy="55" r="3.5" fill="#1E293B"/><path d="M41 67c5 6 13 6 18 0" stroke="#9A3412" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M28 90c4-9 12-12 22-12s18 3 22 12" fill="#10B981"/></svg>`,
+      sister: `<svg viewBox="0 0 100 100"><circle cx="22" cy="44" r="11" fill="#78350F"/><circle cx="78" cy="44" r="11" fill="#78350F"/><circle cx="26" cy="45" r="4" fill="#EC4899"/><circle cx="74" cy="45" r="4" fill="#EC4899"/><circle cx="50" cy="56" r="27" fill="#FED7AA"/><path d="M24 48c4-14 14-20 26-20s22 6 26 20c-8-6-16-8-26-8s-18 2-26 8z" fill="#78350F"/><circle cx="40" cy="55" r="3.5" fill="#1E293B"/><circle cx="60" cy="55" r="3.5" fill="#1E293B"/><circle cx="34" cy="61" r="3.5" fill="#F472B6" opacity="0.7"/><circle cx="66" cy="61" r="3.5" fill="#F472B6" opacity="0.7"/><path d="M42 67c4 5 12 5 16 0" stroke="#BE185D" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M28 90c4-9 12-12 22-12s18 3 22 12" fill="#8B5CF6"/></svg>`,
+      grandfather: `<svg viewBox="0 0 100 100"><circle cx="50" cy="54" r="29" fill="#FDBA74"/><path d="M21 50c0-10 4-16 8-18 2 6 2 12 0 18zM79 50c0-10-4-16-8-18-2 6-2 12 0 18z" fill="#E2E8F0"/><circle cx="39" cy="52" r="7" stroke="#475569" stroke-width="2.5" fill="#FFFFFF" fill-opacity="0.4"/><circle cx="61" cy="52" r="7" stroke="#475569" stroke-width="2.5" fill="#FFFFFF" fill-opacity="0.4"/><line x1="46" y1="52" x2="54" y2="52" stroke="#475569" stroke-width="2.5"/><circle cx="39" cy="52" r="2.5" fill="#1E293B"/><circle cx="61" cy="52" r="2.5" fill="#1E293B"/><path d="M38 64c4-2 8-2 12 0 4-2 8-2 12 0" stroke="#CBD5E1" stroke-width="4.5" stroke-linecap="round" fill="none"/><path d="M44 71c3 3 9 3 12 0" stroke="#9A3412" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M24 88c4-10 14-14 26-14s22 4 26 14" fill="#F59E0B"/></svg>`,
+      grandmother: `<svg viewBox="0 0 100 100"><circle cx="50" cy="24" r="13" fill="#E2E8F0"/><circle cx="50" cy="55" r="28" fill="#FED7AA"/><path d="M23 48c3-15 14-22 27-22s24 7 27 22c-8-6-17-8-27-8s-19 2-27 8z" fill="#E2E8F0"/><circle cx="39" cy="54" r="6.5" stroke="#DB2777" stroke-width="2.5" fill="#FFFFFF" fill-opacity="0.4"/><circle cx="61" cy="54" r="6.5" stroke="#DB2777" stroke-width="2.5" fill="#FFFFFF" fill-opacity="0.4"/><line x1="45.5" y1="54" x2="54.5" y2="54" stroke="#DB2777" stroke-width="2.5"/><circle cx="39" cy="54" r="2.5" fill="#1E293B"/><circle cx="61" cy="54" r="2.5" fill="#1E293B"/><path d="M43 68c4 4 10 4 14 0" stroke="#BE185D" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M26 90c4-10 13-14 24-14s20 4 24 14" fill="#EC4899"/></svg>`,
+      baby: `<svg viewBox="0 0 100 100"><circle cx="50" cy="58" r="25" fill="#FED7AA"/><path d="M46 33c2-6 8-6 8 0 0 4-4 5-6 3" stroke="#92400E" stroke-width="3.5" stroke-linecap="round" fill="none"/><circle cx="41" cy="56" r="3.5" fill="#1E293B"/><circle cx="59" cy="56" r="3.5" fill="#1E293B"/><circle cx="35" cy="62" r="3.5" fill="#FDA4AF" opacity="0.8"/><circle cx="65" cy="62" r="3.5" fill="#FDA4AF" opacity="0.8"/><circle cx="50" cy="68" r="5.5" fill="#38BDF8" stroke="#0284C7" stroke-width="2"/><path d="M30 90c4-8 11-11 20-11s16 3 20 11" fill="#06B6D4"/></svg>`
+    };
+
+    /* ---------- Lesson Data ---------- */
+    const P = {
+      father: { id: 'father', n: 1, en: 'Father', ph: '/ˈfɑː.ðər/', syl: 'fa·ther', ind: 'Ayah', g: 'he', move: 'Touch your imaginary moustache.', moveId: 'Pegang kumis imajiner' },
+      mother: { id: 'mother', n: 2, en: 'Mother', ph: '/ˈmʌð.ər/', syl: 'mo·ther', ind: 'Ibu', g: 'she', move: 'Hug yourself with both arms.', moveId: 'Memeluk kedua tangan' },
+      brother: { id: 'brother', n: 3, en: 'Brother', ph: '/ˈbrʌð.ər/', syl: 'bro·ther', ind: 'Saudara laki-laki', g: 'he', move: 'Make a fist and point it forward.', moveId: 'Kepalkan tangan lurus ke depan' },
+      sister: { id: 'sister', n: 4, en: 'Sister', ph: '/ˈsɪs.tər/', syl: 'sis·ter', ind: 'Saudara perempuan', g: 'she', move: 'Put both hands on your cheeks.', moveId: 'Tempelkan telapak tangan di pipi' },
+      grandfather: { id: 'grandfather', n: 5, en: 'Grandfather', ph: '/ˈɡræn.fɑː.ðər/', syl: 'grand·fa·ther', ind: 'Kakek', g: 'he', move: 'Bend a little and hold an imaginary stick.', moveId: 'Membungkuk, pegang tongkat imajiner' },
+      grandmother: { id: 'grandmother', n: 6, en: 'Grandmother', ph: '/ˈɡræn.mʌð.ər/', syl: 'grand·mo·ther', ind: 'Nenek', g: 'she', move: 'Stroke your hair or touch your glasses.', moveId: 'Elus rambut atau pegang kacamata' },
+      baby: { id: 'baby', n: 7, en: 'Baby', ph: '/ˈbeɪ.bi/', syl: 'ba·by', ind: 'Bayi', g: 'he', move: '', moveId: '' }
+    };
+
+    const M = ['father', 'mother', 'brother', 'sister', 'grandfather', 'grandmother'].map(k => P[k]);
+    const cap = s => s[0].toUpperCase() + s.slice(1);
+    const av = (id, s = 80) => `<span class="av" style="--s:${s}px;--c:var(--c${P[id].n});--t:var(--t${P[id].n})" aria-hidden="true">${SVG_FACES[id]}</span>`;
+
+    /* ---------- State ---------- */
+    const state = { i: 0, last: 0, stars: 0, sound: true, done: {}, mood: null, hard: null };
+    let tok = 0;
+    const TTS = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+
+    /* ---------- Audio Engine ---------- */
+    let voice = null, ac = null;
+    function pickVoice() {
+      try {
+        const vs = speechSynthesis.getVoices();
+        voice = vs.find(v => /^en[-_]US/i.test(v.lang) && /samantha|google|zira|aria|jenny|female/i.test(v.name)) ||
+                vs.find(v => /^en[-_](US|GB)/i.test(v.lang)) ||
+                vs.find(v => /^en/i.test(v.lang)) || null;
+      } catch (e) {}
+    }
+    if (TTS) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+    else { $('#ttsNote').hidden = false; }
+
+    function say(text, o = {}) {
+      return new Promise(res => {
+        if (!state.sound || !TTS) { res(); return; }
+        try {
+          speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'en-US';
+          if (voice) u.voice = voice;
+          u.rate = o.rate || 0.85;
+          u.pitch = o.pitch || 1.12;
+          let d = false;
+          const fin = () => { if (!d) { d = true; res(); } };
+          u.onend = fin; u.onerror = fin;
+          setTimeout(fin, 1800 + text.length * 140);
+          speechSynthesis.speak(u);
+        } catch (e) { res(); }
+      });
+    }
+
+    function tone(freqs, dur = 0.12) {
+      if (!state.sound) return;
+      try {
+        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+        freqs.forEach((f, i) => {
+          const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i * dur;
+          o.type = 'triangle';
+          o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.12);
+          o.connect(g); g.connect(ac.destination);
+          o.start(t); o.stop(t + dur + 0.14);
+        });
+      } catch (e) {}
+    }
+    const good = () => tone([587.33, 880]), bad = () => tone([220], 0.18);
+
+    function addStar(n = 1) {
+      state.stars += n;
+      $('#starN').textContent = state.stars;
+      const s = $('#stars');
+      s.classList.remove('bump');
+      void s.offsetWidth;
+      s.classList.add('bump');
+    }
+
+    function burst(n = 20) {
+      if (RM) return;
+      const em = ['⭐', '🎉', '💛', '🌟', '✨'];
+      for (let i = 0; i < n; i++) {
+        const s = document.createElement('span');
+        s.className = 'fall';
+        s.textContent = em[i % em.length];
+        s.style.left = Math.random() * 94 + 'vw';
+        s.style.animationDelay = Math.random() * 0.45 + 's';
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 2500);
+      }
+    }
+
+    /* ---------- Shared Stage Helpers ---------- */
+    const STAGES = [];
+    function head() {
+      const s = STAGES[state.i];
+      return `<div class="head"><span class="phase">${s.ph}</span><h2>${s.t}</h2><p class="goal">${s.goal}</p><p class="idt">${s.goalId}</p></div>`;
+    }
+
+    function win(el, msg = 'Stage complete!', last = false) {
+      state.done[STAGES[state.i].k] = true;
+      renderTrail();
+      good();
+      burst();
+      const w = el.querySelector('#wn');
+      if (!w) return;
+      w.innerHTML = `<div class="win"><span>🎉 ${msg}</span>${last ? '' : '<button class="btn primary" data-next>Next ▶</button>'}</div>`;
+      const nb = w.querySelector('[data-next]');
+      if (nb) nb.onclick = () => go(state.i + 1);
+      updatePager();
+      w.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+    }
+
+    function ask(box, o) {
+      box.innerHTML = `<div class="qrow"><p class="qt">${o.prompt}</p>${o.say ? '<button class="btn small" data-l>🔊 Listen</button>' : ''}</div>
+        <div class="opts">${o.opts.map(x => `<button class="opt" data-k="${x.k}">${x.html}</button>`).join('')}</div>
+        <p class="fb" role="status"></p>`;
+      const fb = box.querySelector('.fb');
+      let locked = false;
+      const l = box.querySelector('[data-l]');
+      if (l) l.onclick = () => say(o.say);
+      box.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+        if (locked) return;
+        if (b.dataset.k === String(o.ok)) {
+          locked = true;
+          b.classList.add('right');
+          fb.textContent = o.good || 'Yes! Great job!';
+          fb.className = 'fb ok';
+          good();
+          addStar();
+          box.querySelectorAll('.opt').forEach(x => x.disabled = true);
+          o.onOk && o.onOk();
+        } else {
+          b.classList.add('wrong');
+          b.disabled = true;
+          fb.textContent = 'Try again! 💪';
+          fb.className = 'fb no';
+          bad();
+        }
+      });
+    }
+
+    /* ---------- Stage 1: Warm-up ---------- */
+    function warm(el) {
+      el.innerHTML = `${head()}
+      <div class="split">
+        <div class="breath-wrap"><div class="breath" id="br" role="img" aria-label="Breathing circle"><span id="brt">Ready?</span></div></div>
+        <div class="col">
+          <p class="big">“Good afternoon, everyone!”</p>
+          <button class="btn" id="hi">🔊 Hear it</button>
+          <p class="hint">Sit up tall. Breathe with the circle, 3 times.</p>
+          <p class="idt">Duduk tegak. Ikuti lingkaran, tarik dan hembuskan napas 3 kali.</p>
+          <button class="btn primary" id="go">▶ Start breathing</button>
+        </div>
+      </div><div id="wn"></div>`;
+      $('#hi').onclick = () => say('Good afternoon, everyone!');
+      $('#go').onclick = async () => {
+        const my = tok, b = $('#go');
+        b.disabled = true;
+        const br = $('#br'), t = $('#brt');
+        for (let r = 0; r < 3; r++) {
+          br.className = 'breath in'; t.textContent = 'Inhale…'; say('Inhale', { rate: 0.6 });
+          await sleep(4000); if (my !== tok) return;
+          br.className = 'breath out'; t.textContent = 'Exhale…'; say('Exhale', { rate: 0.6 });
+          await sleep(4000); if (my !== tok) return;
+        }
+        br.className = 'breath'; t.textContent = '😊';
+        say('Feel happy and ready to learn!');
+        win(el, 'Happy and ready!');
+      };
+    }
+
+    /* ---------- Stage 2: Let's Get Ready ---------- */
+    function ready(el) {
+      const fam = ['father', 'mother', 'brother', 'sister', 'baby'];
+      let parts = 0;
+      const part = () => { if (++parts === 3) win(el, 'You know the family!'); };
+      el.innerHTML = `${head()}
+      <div class="scene" id="scene">${fam.map(id => `<button class="person" data-id="${id}" aria-label="Person">${av(id, 88)}<span class="nm" hidden>${P[id].en}</span></button>`).join('')}</div>
+      <section class="sub"><div id="q1"></div></section>
+      <section class="sub"><p class="qt">2. Who are they? <small class="hint" id="cnt">Tap each person (0/5)</small></p><p class="idt">Siapa mereka? Sentuh setiap orang.</p></section>
+      <section class="sub"><div id="q3"></div></section>
+      <div id="wn"></div>`;
+
+      ask($('#q1'), {
+        prompt: '1. How many people are there?',
+        say: 'How many people are there?',
+        ok: 5,
+        opts: [3, 4, 5, 6].map(n => ({ k: n, html: `<b>${n}</b>` })),
+        good: 'Yes! Five people!',
+        onOk: () => { say('One, two, three, four, five!'); part(); }
+      });
+
+      const seen = new Set();
+      el.querySelectorAll('.person').forEach(b => b.onclick = () => {
+        const id = b.dataset.id;
+        b.querySelector('.nm').hidden = false;
+        say(P[id].en);
+        if (!seen.has(id)) {
+          seen.add(id);
+          addStar();
+          $('#cnt').textContent = `Tap each person (${seen.size}/5)`;
+          if (seen.size === 5) { $('#cnt').textContent = '✅ All 5 found!'; part(); }
+        }
+      });
+
+      ask($('#q3'), {
+        prompt: '3. You tell friends about your family. What do you say?',
+        say: 'You want to tell friends about your family. What will you say?',
+        ok: 'f',
+        good: 'Yes! “This is my family.”',
+        opts: [
+          { k: 't', html: '“This is my teacher.”' },
+          { k: 'fr', html: '“This is my friend.”' },
+          { k: 'f', html: '“This is my family.”' }
+        ],
+        onOk: () => { say('This is my family.'); part(); }
+      });
+    }
+
+    /* ---------- Stage 3: Look and Answer ---------- */
+    function answer(el) {
+      const order = shuffle(M);
+      let r = 0;
+      el.innerHTML = `${head()}<div class="dots" id="dots"></div><div id="rd"></div><div id="wn"></div>`;
+      const myTok = tok;
+      function show() {
+        const m = order[r];
+        const pro = m.g === 'he' ? 'he' : 'she';
+        $('#dots').innerHTML = order.map((_, i) => `<i class="${i < r ? 'on' : i === r ? 'cur' : ''}"></i>`).join('');
+        $('#rd').innerHTML = `<div class="pic">${av(m.id, 145)}</div><div id="ask"></div>`;
+        ask($('#ask'), {
+          prompt: `Who is ${pro}?`,
+          say: `Who is ${pro}?`,
+          ok: m.id,
+          opts: shuffle(M.filter(x => x.g === m.g)).map(x => ({ k: x.id, html: `<b>${x.en}</b><small class="idt">${x.ind}</small>` })),
+          good: `Yes! ${m.en}!`,
+          onOk: async () => {
+            say(`${cap(pro)} is my ${m.en.toLowerCase()}.`);
+            r++;
+            await sleep(1700);
+            if (tok !== myTok) return;
+            if (r < order.length) show();
+            else {
+              $('#dots').innerHTML = order.map(() => '<i class="on"></i>').join('');
+              $('#rd').innerHTML = '';
+              win(el, 'All 6 family members!');
+            }
+          }
+        });
+      }
+      show();
+    }
+
+    /* ---------- Stage 4: Listen and Say ---------- */
+    function say_(el) {
+      let i = 0;
+      const said = new Set();
+      el.innerHTML = `${head()}<div id="fc"></div><div class="chips" id="chips"></div><div id="wn"></div>`;
+      function draw() {
+        const m = M[i];
+        $('#fc').innerHTML = `<div class="flash">${av(m.id, 125)}<div class="word">${m.en}</div><div class="ph">${m.ph}</div><div class="syl">${m.syl}</div><small class="idt">${m.ind}</small>
+          <div class="move">🙌 <b>Move:</b> ${m.move}<span class="idt"> (${m.moveId})</span></div>
+          <div class="row"><button class="btn" id="l1">🔊 Listen</button><button class="btn" id="l2">🐢 Slowly</button><button class="btn primary" id="ok" ${said.has(m.id) ? 'aria-pressed="true"' : ''}>${said.has(m.id) ? '✅ Said it!' : '🗣️ I said it!'}</button></div></div>
+          <div class="cardnav" style="margin-top:12px"><button class="btn small" id="pv" ${i === 0 ? 'disabled' : ''}>◀ Prev</button><span class="hint">${i + 1} / 6</span><button class="btn small" id="nx" ${i === 5 ? 'disabled' : ''}>Next ▶</button></div>`;
+        $('#l1').onclick = () => say(m.en);
+        $('#l2').onclick = () => say(m.en, { rate: 0.5 });
+        $('#ok').onclick = () => {
+          if (!said.has(m.id)) { said.add(m.id); addStar(); good(); }
+          draw(); chips();
+          if (said.size === 6 && !state.done.say) win(el, 'You said all 6 words!');
+        };
+        $('#pv').onclick = () => { i--; draw(); };
+        $('#nx').onclick = () => { i++; draw(); };
+        chips();
+      }
+      function chips() {
+        $('#chips').innerHTML = M.map((m, k) => `<button class="chip ${said.has(m.id) ? '' : 'mute'}" data-k="${k}">${said.has(m.id) ? '✅ ' : ''}${m.en}</button>`).join('');
+        $('#chips').querySelectorAll('.chip').forEach(c => c.onclick = () => { i = +c.dataset.k; draw(); });
+      }
+      draw();
+    }
+
+    /* ---------- Stage 5: Song Time ---------- */
+    function sing(el) {
+      const V = [['Daddy', 'father'], ['Mommy', 'mother'], ['Brother', 'brother'], ['Sister', 'sister'], ['Baby', 'baby']];
+      const lines = V.flatMap(([n]) => [`${n} finger, ${n} finger, where are you?`, 'Here I am, here I am. How do you do?']);
+      el.innerHTML = `${head()}
+      <div class="fingers" id="fg">${V.map(([n, id]) => `<button class="finger" data-id="${id}" aria-label="${n} finger">${av(id, 54)}<span>${n}</span></button>`).join('')}</div>
+      <ol class="lyrics" id="ly">${lines.map((l, k) => `<li data-k="${k}">${l}</li>`).join('')}</ol>
+      <div class="row"><button class="btn primary" id="play">▶ Sing along</button><button class="btn" id="slow" aria-pressed="false">🐢 Slow</button></div>
+      <p class="hint">Hide your fingers. When you hear “Here I am”, pop the finger up!</p>
+      <p class="idt">Sembunyikan jari. Saat lagu “Here I am”, tunjukkan jarinya!</p>
+      <p class="notice">💡 Be creative! Make up your own new finger move for the song.<span class="idt"> Ciptakan gerakan jari barumu sendiri!</span></p><div id="wn"></div>`;
+
+      let playing = false, run = 0, slow = false;
+      const fg = $('#fg'), lis = [...el.querySelectorAll('#ly li')];
+      $('#slow').onclick = e => { slow = !slow; e.currentTarget.setAttribute('aria-pressed', slow); };
+      fg.querySelectorAll('.finger').forEach(b => b.onclick = async () => {
+        if (playing) return;
+        b.classList.add('pop');
+        await say(`${P[b.dataset.id].en === 'Baby' ? 'Baby' : b.querySelector('span').textContent} finger`);
+        b.classList.remove('pop');
+      });
+
+      function stop() {
+        run++; playing = false;
+        fg.classList.remove('play');
+        fg.querySelectorAll('.finger').forEach(f => f.classList.remove('pop'));
+        lis.forEach(l => l.classList.remove('on'));
+        $('#play').textContent = '▶ Sing along';
+        try { TTS && speechSynthesis.cancel(); } catch (e) {}
+      }
+
+      $('#play').onclick = async () => {
+        if (playing) { stop(); return; }
+        playing = true;
+        const my = ++run, myTok = tok;
+        $('#play').textContent = '⏹ Stop';
+        fg.classList.add('play');
+        const alive = () => my === run && myTok === tok;
+        for (let v = 0; v < V.length; v++) {
+          for (let l = 0; l < 2; l++) {
+            const k = v * 2 + l;
+            lis.forEach(x => x.classList.toggle('on', +x.dataset.k === k));
+            const f = fg.children[v];
+            f.classList.toggle('pop', l === 1);
+            const txt = lines[k];
+            await Promise.all([say(txt, { rate: slow ? 0.6 : 0.8, pitch: 1.25 }), sleep(txt.length * (slow ? 130 : 95))]);
+            if (!alive()) return;
+          }
+          fg.children[v].classList.remove('pop');
+        }
+        stop(); burst(12); win(el, 'Great singing!');
+      };
+    }
+
+    /* ---------- Stage 6: Look and Speak ---------- */
+    function look(el) {
+      let q = shuffle(M), known = new Set(), shown = false;
+      el.innerHTML = `${head()}<p class="hint" id="kn"></p><div id="fc"></div><div id="wn"></div>`;
+      function draw() {
+        $('#kn').textContent = `Words you know: ${known.size} / 6`;
+        if (!q.length) { $('#fc').innerHTML = ''; win(el, 'You know all 6 words!'); return; }
+        const m = q[0];
+        $('#fc').innerHTML = `<div class="flash">${av(m.id, 145)}
+          ${shown ? `<div class="word">${m.en}</div><small class="idt">${m.ind}</small><div class="row"><button class="btn" id="hear">🔊 Listen</button></div><div class="row"><button class="btn primary" id="got">👍 I said it right</button><button class="btn" id="again">🔁 Practice again</button></div>`
+                  : `<p class="big">Say it loud!</p><button class="btn primary" id="show">👀 Show the word</button>`}</div>`;
+        if (shown) {
+          $('#hear').onclick = () => say(m.en);
+          $('#got').onclick = () => { known.add(m.id); q.shift(); shown = false; addStar(); good(); draw(); };
+          $('#again').onclick = () => { q.push(q.shift()); shown = false; draw(); };
+        } else {
+          $('#show').onclick = () => { shown = true; draw(); say(m.en); };
+        }
+      }
+      draw();
+    }
+
+    /* ---------- Stage 7: Listen and Speak ---------- */
+    function lspeak(el) {
+      const order = shuffle(M).slice(0, 5);
+      let r = 0;
+      el.innerHTML = `${head()}<div class="dots" id="dots"></div><div id="rd"></div><div id="wn"></div>`;
+      const myTok = tok;
+      function show() {
+        const m = order[r], model = `${cap(m.g)} is my ${m.en.toLowerCase()}.`;
+        $('#dots').innerHTML = order.map((_, i) => `<i class="${i < r ? 'on' : i === r ? 'cur' : ''}"></i>`).join('');
+        $('#rd').innerHTML = `<div class="pic">${av(m.id, 135)}</div>
+          <div class="row" style="margin-bottom:12px"><button class="btn" id="mod">🔊 Listen to the sentence</button></div>
+          <div class="sentence"><span class="slot" id="s1">?</span> is my <span class="slot" id="s2">?</span>.</div>
+          <div class="row" style="margin-top:14px" id="pr">${['He', 'She'].map(p => `<button class="opt" style="min-width:120px" data-p="${p}">${p}</button>`).join('')}</div>
+          <div class="row" style="margin-top:10px" id="nr">${M.map(x => `<button class="chip" data-n="${x.id}">${x.en}</button>`).join('')}</div>
+          <p class="fb" id="fb" role="status" style="text-align:center;margin-top:10px"></p>`;
+        $('#mod').onclick = () => say(model);
+        let p = null, n = null, lock = false;
+        const s1 = $('#s1'), s2 = $('#s2'), fb = $('#fb');
+        const check = async () => {
+          if (!p || !n) return;
+          lock = true;
+          const okP = p === cap(m.g), okN = n === m.id;
+          if (okP && okN) {
+            s1.className = 'slot good'; s2.className = 'slot good';
+            fb.textContent = 'Perfect! 🌟'; fb.className = 'fb ok';
+            good(); addStar(2);
+            await say(model);
+            r++;
+            await sleep(500);
+            if (tok !== myTok) return;
+            if (r < order.length) show();
+            else {
+              $('#dots').innerHTML = order.map(() => '<i class="on"></i>').join('');
+              $('#rd').innerHTML = `<div class="panel"><p class="big">Now say it with a partner!</p><p>A: “Who is he?” &nbsp; B: “He is my father.”</p><p class="idt">Latihan berpasangan: bergantian bertanya dan menjawab.</p></div>`;
+              win(el, 'Sentences built!');
+            }
+          } else {
+            bad();
+            if (!okP) { s1.className = 'slot bad'; fb.textContent = 'Is it a boy or a girl? 🤔'; }
+            else { s2.className = 'slot bad'; fb.textContent = 'Look at the picture again! 👀'; }
+            fb.className = 'fb no';
+            await sleep(900);
+            if (tok !== myTok) return;
+            if (!okP) { p = null; s1.textContent = '?'; s1.className = 'slot'; }
+            if (!okN) { n = null; s2.textContent = '?'; s2.className = 'slot'; }
+            lock = false;
+          }
+        };
+        el.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { if (lock) return; p = b.dataset.p; s1.textContent = p; s1.className = 'slot'; check(); });
+        el.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { if (lock) return; n = b.dataset.n; s2.textContent = P[n].en.toLowerCase(); s2.className = 'slot'; say(P[n].en); check(); });
+      }
+      show();
+    }
+
+    /* ---------- Stage 8: Listen and Circle (Summative) ---------- */
+    const ITEMS = [
+      { pic: 'father', s: 'He is my father.', a: true },
+      { pic: 'mother', s: 'She is my sister.', a: false },
+      { pic: 'brother', s: 'He is my brother.', a: true },
+      { pic: 'grandmother', s: 'He is my grandfather.', a: false }
+    ];
+    const predicate = v => v >= 88 ? ['A', 'Sangat Baik · Excellent!'] : v >= 75 ? ['B', 'Baik · Good job!'] : v >= 60 ? ['C', 'Cukup · Keep trying!'] : ['D', 'Perlu Bimbingan · Let’s practise more!'];
+
+    function circle(el) {
+      const ans = ITEMS.map(() => null);
+      el.innerHTML = `${head()}<div class="tcol" id="items">${ITEMS.map((it, k) => `<div class="circ" data-k="${k}">${av(it.pic, 78)}<div class="row" style="justify-content:flex-start"><b>${k + 1}.</b><button class="btn small" data-play="${k}">🔊 Play</button></div><div class="yn"><button class="ring" data-a="1" aria-pressed="false">YES</button><button class="ring" data-a="0" aria-pressed="false">NO</button></div></div>`).join('')}</div>
+        <div class="row"><button class="btn primary" id="chk" disabled>✅ Check my answers</button></div><div id="res"></div><div id="wn"></div>`;
+      el.querySelectorAll('[data-play]').forEach(b => b.onclick = () => say(ITEMS[+b.dataset.play].s, { rate: 0.8 }));
+      el.querySelectorAll('.circ').forEach(c => c.querySelectorAll('.ring').forEach(r => r.onclick = () => {
+        ans[+c.dataset.k] = r.dataset.a === '1';
+        c.querySelectorAll('.ring').forEach(x => x.setAttribute('aria-pressed', x === r));
+        $('#chk').disabled = ans.some(a => a === null);
+        tone([520]);
+      }));
+      $('#chk').onclick = () => {
+        let ok = 0;
+        el.querySelectorAll('.circ').forEach((c, k) => {
+          const r = ans[k] === ITEMS[k].a;
+          ok += r;
+          c.classList.add(r ? 'right' : 'wrong');
+          c.querySelectorAll('button').forEach(b => b.disabled = true);
+        });
+        const sc = ok * 100 / ITEMS.length, [g, txt] = predicate(sc);
+        $('#chk').hidden = true;
+        $('#res').innerHTML = `<div class="score"><b>${sc}</b><div><div class="grade">Grade ${g}</div><div>${txt}</div><div class="hint">${ok} of ${ITEMS.length} correct</div></div><button class="btn" id="retry">🔁 Try again</button></div>`;
+        $('#retry').onclick = () => circle(el);
+        addStar(ok);
+        ok === ITEMS.length ? win(el, 'Perfect score!') : (good(), state.done.circle = true, renderTrail(), updatePager());
+      };
+    }
+
+    /* ---------- Stage 9: Point and Speak ---------- */
+    function point(el) {
+      const spoken = new Set();
+      let cur = null;
+      el.innerHTML = `${head()}<div class="grid6" id="g">${M.map(m => `<button class="tile" data-id="${m.id}" aria-pressed="false" aria-label="Family member">${av(m.id, 80)}</button>`).join('')}</div>
+        <div class="row"><button class="btn" id="rnd">🎲 Pick a card for me</button><span class="hint" id="cn">Spoken: 0 / 3</span></div>
+        <div class="panel" id="pp"><p class="big">Tap a picture. Say the sentence!</p><p class="idt">Sentuh gambar, lalu ucapkan kalimatnya dengan lantang.</p></div><div id="wn"></div>`;
+      function pick(id) {
+        cur = id;
+        const m = P[id], s = `${cap(m.g)} is my ${m.en.toLowerCase()}!`;
+        el.querySelectorAll('.tile').forEach(t => {
+          t.setAttribute('aria-pressed', t.dataset.id === id);
+          t.classList.toggle('did', spoken.has(t.dataset.id));
+        });
+        $('#pp').innerHTML = `<p class="hint">Say it loud first, then check!</p><button class="btn primary" id="rev">👀 Show the sentence</button>`;
+        $('#rev').onclick = () => {
+          $('#pp').innerHTML = `<p class="big">“${s}”</p><button class="btn" id="h">🔊 Listen</button><p class="hint">How was your voice?</p>
+            <div class="row"><button class="btn" data-r="0">🐭 Quiet</button><button class="btn" data-r="1">🙂 Clear</button><button class="btn" data-r="2">🦁 Loud & proud</button></div><p class="fb" id="fb" role="status"></p>`;
+          say(s);
+          $('#h').onclick = () => say(s);
+          el.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+            const r = +b.dataset.r;
+            if (r === 0) { $('#fb').textContent = 'Try again with a louder voice! 💪'; $('#fb').className = 'fb no'; bad(); return; }
+            spoken.add(id); addStar(r); good();
+            $('#fb').textContent = r === 2 ? 'Wow! Great voice! 🌟' : 'Nice! 👍';
+            $('#fb').className = 'fb ok';
+            $('#cn').textContent = `Spoken: ${Math.min(spoken.size, 3)} / 3`;
+            el.querySelectorAll('.tile').forEach(t => t.classList.toggle('did', spoken.has(t.dataset.id)));
+            if (spoken.size >= 3 && !state.done.point) win(el, 'Point and Speak star!');
+          });
+        };
+      }
+      el.querySelectorAll('.tile').forEach(t => t.onclick = () => pick(t.dataset.id));
+      $('#rnd').onclick = () => { const rest = M.filter(m => m.id !== cur); pick(rest[Math.random() * rest.length | 0].id); };
+    }
+
+    /* ---------- Stage 10: Reflect ---------- */
+    function reflect(el) {
+      const moods = [['😄', 'Very happy'], ['🙂', 'Happy'], ['😐', 'So-so']], hard = [['🌱', 'Easy'], ['🌿', 'Just right'], ['🌳', 'Hard']];
+      el.innerHTML = `${head()}
+      <div class="tcol">
+        <h3>Today I learned 6 words</h3>
+        <div class="chips" style="justify-content:flex-start">${M.map(m => `<button class="chip" data-w="${m.id}">${m.en}</button>`).join('')}</div>
+        <h3>How do you feel?</h3>
+        <div class="row" style="justify-content:flex-start" id="mo">${moods.map(([e, t], k) => `<button class="btn" data-m="${k}" aria-pressed="${state.mood === k}" aria-label="${t}"><span style="font-size:28px">${e}</span> ${t}</button>`).join('')}</div>
+        <h3>How was the lesson?</h3>
+        <div class="row" style="justify-content:flex-start" id="hd">${hard.map(([e, t], k) => `<button class="btn" data-h="${k}" aria-pressed="${state.hard === k}">${e} ${t}</button>`).join('')}</div>
+        <p class="idt">Refleksi mandiri: perasaan dan tingkat kesulitan belajar hari ini.</p>
+        <h3>My name</h3>
+        <input type="text" id="nm" maxlength="20" placeholder="Type your name" autocomplete="off">
+        <div class="badge"><span style="font-size:52px">🏅</span><div><div class="big" id="bn">Family Star</div><div>⭐ × <b id="bs">${state.stars}</b></div></div></div>
+        <div class="notice">🏡 <b>Home challenge:</b> Show a family photo. Say: “This is my family. She is my mother. He is my father.”<span class="idt"> Tantangan di rumah: tunjukkan foto keluarga dan ucapkan kalimatnya bersama orang tua.</span></div>
+        <div class="row" style="justify-content:flex-start"><button class="btn" id="again">🔄 Play again</button></div>
+      </div><div id="wn"></div>`;
+      el.querySelectorAll('[data-w]').forEach(b => b.onclick = () => say(P[b.dataset.w].en));
+      const chk = () => {
+        if (state.mood !== null && state.hard !== null && !state.done.reflect) {
+          addStar();
+          $('#bs').textContent = state.stars;
+          win(el, 'Thank you! See you next time!', true);
+          say('Thank you, everyone! Goodbye!');
+        }
+      };
+      el.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { state.mood = +b.dataset.m; el.querySelectorAll('[data-m]').forEach(x => x.setAttribute('aria-pressed', x === b)); tone([600]); chk(); });
+      el.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { state.hard = +b.dataset.h; el.querySelectorAll('[data-h]').forEach(x => x.setAttribute('aria-pressed', x === b)); tone([600]); chk(); });
+      $('#nm').oninput = e => { $('#bn').textContent = (e.target.value.trim() || 'Family') + ' Star'; };
+      $('#again').onclick = () => { state.stars = 0; state.done = {}; state.mood = state.hard = null; $('#starN').textContent = 0; go(0); };
+    }
+
+    /* ---------- Teacher Guide ---------- */
+    function teacher(el) {
+      el.innerHTML = `<div class="head"><span class="phase">Untuk Guru</span><h2>Panduan Penggunaan Media</h2><p class="goal">Media ini mengikuti alur RPP Chapter 3 My Family, Pertemuan 11 (2 × 35 menit).</p></div>
+      <div class="tcol"><h3>Pemetaan RPP ke media</h3>
+      <div class="tbl"><table><thead><tr><th>Tahap RPP</th><th>Fitur di media</th><th>Aktivitas murid</th></tr></thead><tbody>
+      <tr><td>Pembuka: salam & latihan napas (Mindful)</td><td>1 · Get Ready</td><td>Mengikuti lingkaran napas 3 kali, mendengar salam</td></tr>
+      <tr><td>Pembuka & Let’s Get Ready: gambar pemantik</td><td>2 · Let’s Get Ready</td><td>Menghitung anggota, menyentuh tiap orang, memilih “This is my family.”</td></tr>
+      <tr><td>Memahami: Look and Answer</td><td>3 · Look and Answer</td><td>“Who is he/she?” memilih jawaban dari 3 pilihan</td></tr>
+      <tr><td>Memahami: Listen and Say</td><td>4 · Listen and Say</td><td>Mendengar, menirukan, gerakan TPR, panduan fonetik</td></tr>
+      <tr><td>Mengaplikasikan: Listen and Sing (TPR)</td><td>5 · Song Time</td><td>Lagu “Daddy Finger” dengan lirik menyala dan jari bergerak</td></tr>
+      <tr><td>Mengaplikasikan: Look and Speak</td><td>6 · Look and Speak</td><td>Flashcard gambar, murid mengucap dulu lalu mengecek</td></tr>
+      <tr><td>Mengaplikasikan: Listen and Speak</td><td>7 · Listen and Speak</td><td>Menyusun “He/She is my …” lalu berlatih berpasangan</td></tr>
+      <tr><td>Merefleksikan: Listen and Circle (sumatif)</td><td>8 · Listen and Circle</td><td>4 soal YES/NO dengan audio, skor × 25 dan predikat A–D</td></tr>
+      <tr><td>Merefleksikan: Point and Speak</td><td>9 · Point and Speak</td><td>Menunjuk gambar, mengucapkan kalimat, menilai suara sendiri</td></tr>
+      <tr><td>Penutup: simpulan, refleksi, apresiasi</td><td>10 · Reflect</td><td>Mengulang 6 kata, memilih perasaan dan tingkat kesulitan, lencana bintang</td></tr>
+      </tbody></table></div>
+      <h3>Cara menggunakan</h3><ul>
+       <li>Proyeksikan ke layar kelas untuk kegiatan klasikal (Look and Answer, Song Time), atau bagikan ke tablet/HP untuk kerja berpasangan.</li>
+       <li>Tombol 🇮🇩 Bahasa menampilkan arti dan petunjuk Indonesia; matikan untuk murid yang sudah siap.</li>
+       <li>Tombol 🐢 Slowly dan Slow pada lagu membantu murid yang masih memerlukan pengulangan (diferensiasi).</li>
+       <li>Tahap boleh dilompati lewat jalur tahap di atas, jadi urutan dapat disesuaikan dengan waktu kelas.</li>
+      </ul>
+      <h3>Asesmen</h3><ul>
+       <li><b>Diagnostik:</b> tahap 2 dan 3 (tanya jawab berbasis gambar).</li>
+       <li><b>Formatif:</b> bintang dan penilaian suara murid di tahap 4–7 dan 9; guru tetap mengamati kinerja lisan.</li>
+       <li><b>Sumatif:</b> tahap 8 (Listen and Circle). Skor = benar ÷ 4 × 100; predikat A ≥ 88, B 75–87, C 60–74, D &lt; 60 sesuai RPP.</li>
+       <li>Penilaian Point and Speak (rubrik pelafalan, He/She, kejelasan suara) tetap dilakukan guru memakai rubrik di Lampiran RPP, karena media tidak merekam atau menilai suara murid.</li>
+      </ul>
+      <h3>Catatan teknis</h3><ul>
+       <li>Suara memakai fitur baca-suara bawaan perangkat (Chrome, Edge, Safari). Kualitas suara bergantung pada perangkat.</li>
+       <li>Soal Listen and Circle dapat diubah guru lewat daftar <code>ITEMS</code> pada kode; kunci saat ini: Ya, Tidak, Ya, Tidak.</li>
+       <li>Skor hanya tampil di layar dan tidak disimpan atau dikirim ke mana pun.</li>
+       <li>Jika perangkat atau jaringan tidak tersedia, gunakan flashcard cetak dan pemodelan langsung oleh guru, sesuai RPP.</li>
+      </ul></div>
+      <div class="row" style="justify-content:flex-start"><button class="btn primary" id="back">◀ Kembali ke pelajaran</button></div>`;
+      $('#back').onclick = () => go(state.last);
+    }
+
+    /* ---------- Registry, Trail & Navigation ---------- */
+    const def = (k, icon, t, ph, goal, goalId, fn, extra = {}) => STAGES.push({ k, icon, t, ph, goal, goalId, fn, ...extra });
+    def('warm', '🌬️', 'Get Ready', 'Pembuka · Mindful', 'Breathe in. Breathe out. Feel happy!', 'Tarik napas, hembuskan, rasakan bahagia!', warm);
+    def('ready', '🖼️', 'Let’s Get Ready', 'Memahami', 'Look at the family picture. Answer the questions.', 'Lihat gambar keluarga dan jawab pertanyaannya.', ready);
+    def('answer', '🔎', 'Look and Answer', 'Memahami', 'Look at the picture. Who is it?', 'Lihat gambar. Siapa dia?', answer);
+    def('say', '👂', 'Listen and Say', 'Memahami', 'Listen. Then say it loud! Repeat after me.', 'Dengarkan, lalu ucapkan dengan lantang.', say_);
+    def('sing', '🎵', 'Song Time', 'Mengaplikasikan · Joyful', 'Sing “Daddy Finger” and move your fingers!', 'Nyanyikan lagu “Daddy Finger” sambil menggerakkan jari!', sing);
+    def('look', '🃏', 'Look and Speak', 'Mengaplikasikan', 'Look at the picture. Say the word. Then check!', 'Lihat gambar, ucapkan katanya, lalu periksa!', look);
+    def('lspeak', '🧩', 'Listen and Speak', 'Mengaplikasikan', 'Listen. Build the sentence: He / She is my …', 'Dengarkan, lalu susun kalimat: He / She is my …', lspeak);
+    def('circle', '⭕', 'Listen and Circle', 'Merefleksikan · Asesmen', 'Listen to the audio. Circle YES or NO.', 'Dengarkan audio. Lingkari YES atau NO.', circle);
+    def('point', '👉', 'Point and Speak', 'Merefleksikan', 'Point to a person. Say the sentence. Be proud!', 'Tunjuk gambar dan ucapkan kalimatnya dengan bangga!', point);
+    def('reflect', '🌈', 'Reflect', 'Penutup · Refleksi', 'How was today? Tell us how you feel.', 'Bagaimana pelajaran hari ini? Ceritakan perasaanmu.', reflect);
+    def('teacher', '👩‍🏫', 'Guru', 'Untuk Guru', '', '', teacher, { hidden: true });
+
+    function renderTrail() {
+      const t = $('#trail');
+      t.innerHTML = STAGES.map((s, i) => s.hidden ? '' : `<button class="node ${state.done[s.k] ? 'done' : ''}" data-i="${i}" ${i === state.i ? 'aria-current="step"' : ''}><span class="dot" aria-hidden="true">${s.icon}</span><span>${s.t}</span></button>`).join('');
+      t.querySelectorAll('.node').forEach(n => n.onclick = () => go(+n.dataset.i));
+      const c = t.querySelector('[aria-current]');
+      if (c) {
+        const L = c.offsetLeft - t.clientWidth / 2 + c.clientWidth / 2;
+        t.scrollTo({ left: Math.max(0, L), behavior: RM ? 'auto' : 'smooth' });
+      }
+    }
+
+    function updatePager() {
+      const s = STAGES[state.i], tch = s.hidden, vis = STAGES.filter(x => !x.hidden).length;
+      $('#pager').hidden = tch;
+      $('#bBack').disabled = state.i === 0;
+      $('#bNext').disabled = state.i >= vis - 1;
+      $('#bNext').classList.toggle('glow', !!state.done[s.k] && state.i < vis - 1);
+    }
+
+    function go(i) {
+      tok++;
+      try { TTS && speechSynthesis.cancel(); } catch (e) {}
+      if (!STAGES[state.i].hidden) state.last = state.i;
+      state.i = i;
+      const el = $('#stage');
+      el.innerHTML = '';
+      // Re-trigger subtle entrance animation
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+      STAGES[i].fn(el);
+      renderTrail();
+      updatePager();
+      $('#trail').scrollIntoView({ block: 'start' });
+    }
+
+    $('#bBack').onclick = () => go(state.i - 1);
+    $('#bNext').onclick = () => go(state.i + 1);
+    $('#bTeach').onclick = () => STAGES[state.i].hidden ? go(state.last) : go(STAGES.length - 1);
+    $('#bSound').onclick = e => {
+      state.sound = !state.sound;
+      e.currentTarget.setAttribute('aria-pressed', !state.sound);
+      e.currentTarget.textContent = state.sound ? '🔊 Sound' : '🔇 Muted';
+      if (!state.sound && TTS) speechSynthesis.cancel();
+    };
+    $('#bId').onclick = e => {
+      const on = document.body.classList.toggle('show-id');
+      e.currentTarget.setAttribute('aria-pressed', on);
+    };
+    $('#bSound').setAttribute('aria-pressed', 'false');
+
+    go(0);
+  })();
+  </script>
+</body>
+</html>
